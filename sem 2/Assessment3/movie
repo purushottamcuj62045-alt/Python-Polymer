@@ -1,0 +1,83 @@
+'''. A movie rating system is a way of evaluating and scoring films based on various criteria, 
+often to help audiences determine the quality or suitability of a movie. There are several types 
+of movie rating systems in use today, ranging from simple star-based systems to more complex 
+scoring methods. As a python developer You need to build a simple system that stores movie 
+ratings (Star Rating System (1–5 stars)). Each movie's title will be the key, and its rating 
+will be the value (Star Rating System (1–5 stars)). Following are the requirements of the 
+system given below: 
+Requirements: 
+• Store Movie Ratings: Create a dictionary where the key is the movie title, and the 
+value is the movie's rating (Star Rating System (1–5 stars)). 
+o Example: {'Inception': 9, 'Avatar': 8, 'Titanic': 7} 
+• Add a New Movie: Write a function to add a new movie with its title and rating. 
+• Update Movie Rating: Implement a function that allows the user to update the rating 
+of a movie. 
+• Delete a Movie: Write a function to delete a movie from the system. 
+• Find the Highest Rated Movie: Write a function to find the highest-rated movie. 
+• Average Rating: Implement a function to calculate the average rating of all movies. '''
+
+movies_list = {'Chainsaw': 8,
+                'inception':7,
+                'Jujustu kaisen': 8.5,
+                'Avatar':7,
+                'Titanic':9,
+                'Interstellar':8.8,
+                'The Dark Knight':9.5,
+                'Forrest Gump':9.5,
+                'The Matrix':8.5,
+                'Gladiator':8.5
+                }
+
+#Adding new movie
+def add_move(name,rating):
+    if name in movies_list:
+        print("Movie already exist")
+    else:  
+        movies_list[name]=rating
+#Updating movie rating
+def update(name,rating):
+    if name in movies_list:
+       movies_list[name] = rating
+       print("rating updated successfully ")
+    else:
+        print("Movie not found ")
+
+# deleting movie
+def delt(name):
+    if dn in movies_list:
+       del movies_list[dn]
+       print("Movie deleted successfully ")
+    else:
+        print("Movie not found ")
+# Average rating
+average = sum(movies_list.values())/len(movies_list)
+print("Average rating:",average)
+
+# Finding highest rating
+highest_movie = None
+highest_rating = 0
+
+for movie in movies_list:
+    if movies_list[movie] >highest_rating:
+        highest_rating = movies_list[movie]
+        highest_movie = movie
+
+print("Highest rated movie:", highest_movie, "with rating", highest_rating)
+ 
+ #-------------Input-----------------
+
+new_movie= input("Enter Movie name")
+movie_rating = int(input("Enter rating of movie"))
+
+add_move(new_movie,movie_rating)
+
+mn = input("Enter the movie name for rating change: ").lower()
+mp = int(input("Enter updated rating: "))
+
+update(mn,mp)
+
+dn = input("Enter themovie name to delete").lower()
+
+delt(dn)
+
+

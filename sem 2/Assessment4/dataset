@@ -1,0 +1,170 @@
+import numpy as np
+import pandas as pd
+
+n=201
+
+data_set ={
+"Student_ID": np.arange(1, n+1),         
+"Age": np.random.randint(18, 25, n), 
+"Gender": np.random.choice(["Male", "Female"], n), 
+"Course": np.random.choice(["CSE", "ECE", "ME", "CE", "EE"], n), 
+"Year": np.random.randint(1, 5, n), 
+"Daily_Usage_Hours": np.round(np.random.uniform(2, 10, n), 2), 
+"Social_Media_Hours": np.round(np.random.uniform(0.5, 5, n), 2), 
+"Study_App_Hours": np.round(np.random.uniform(0, 4, n), 2), 
+"Gaming_Hours": np.round(np.random.uniform(0, 4, n), 2), 
+"Video_Streaming_Hours": np.round(np.random.uniform(0.5, 5, n), 2), 
+"Sleep_Hours": np.round(np.random.uniform(4, 9, n), 2), 
+"Screen_Time_Before_Bed": np.random.choice(["Yes", "No"], n), 
+"Data_Usage_GB": np.round(np.random.uniform(0.5, 5, n), 2), 
+"Preferred_App": np.random.choice(["Instagram", "YouTube", "WhatsApp", 
+"LinkedIn", "Netflix"], n), 
+"Academic_Performance": np.round(np.random.uniform(5, 10, n), 2) 
+
+}
+
+data_f =pd.DataFrame(data_set)
+print("<----------------Data Frame------------------>")
+print(data_f)
+#converting into csv file
+data_f.to_csv('Studentusages.csv',index=False)
+data_p=data_f.iloc[[0,1,2,3,4,5],0:15]
+
+
+'''Q2. Displaying Data 
+Write a Python function show_edges(df, n) that displays the first n and last n rows of a 
+DataFrame. 
+(a) Implement the function. 
+(b) Call the function with n = 7 and show the output. 
+(c) Explain why viewing head and tail is useful in real-world datasets.'''
+def show_edges(df, n):
+    print("<---------First", n, "rows:---------->")
+    print(df.head(n))
+    print("\nLast", n, "rows:")
+    print(df.tail(n))
+print(show_edges(data_f,7))
+
+'''Data Selection Techniques 
+Demonstrate the following operations using your dataset: 
+(a) Select a single column and multiple columns 
+(b) Extract rows from index 20 to 30 
+(c) Use .loc[] to select specific rows and columns by labels 
+(d) Use .iloc[] to select data using integer positions'''
+single_column = data_f["Age"]
+multiple_columns = data_f[["Age", "Gender", "Course"]]  
+print("<--------------Single Column (Age):-------------->")
+print(single_column)
+print("<---------------Multiple Columns (Age, Gender, Course):-------------->")
+print(multiple_columns) 
+rows_20_to_30 = data_f[20:31]   
+print("<----------------Rows from index 20 to 30:----------------->")
+print(rows_20_to_30)
+loc_selection = data_f.loc[20:30, ["Student_ID", "Age", "Course"]]
+print("<---------------------Using .loc[] to select specific rows and columns:---------------------->")
+print(loc_selection)
+
+'''Value Counts [Hint: value_counts()] 
+(a) Find how many students belong to each Gender 
+(b) Identify the most preferred mobile app category 
+(c) Interpret what these counts tell you about usage trends '''
+gender_counts = data_f["Gender"].value_counts()
+preferred_app_counts = data_f["Preferred_App"].value_counts()
+print("<----------------Gender Counts:----------------->")
+print(gender_counts)
+print("<----------------Preferred App Counts:----------------->")       
+print(preferred_app_counts)
+
+'''Q5. Cross Tabulation [ hint: crosstab()] 
+(a) Create a cross-tabulation between Gender and Preferred_App 
+(b) Create a cross-tabulation between Year and Screen_Time_Before_Bed 
+(c) Write 2 insights from each table '''
+cross_tab_gender_app = pd.crosstab(data_f["Gender"], data_f["Preferred_App"])
+cross_tab_year_screen_time = pd.crosstab(data_f["Year"], data_f["Screen_Time_Before_Bed"])
+print("<----------------Cross Tabulation between Gender and Preferred_App:----------------->")
+print(cross_tab_gender_app)
+print("<----------------Cross Tabulation between Year and Screen_Time_Before_Bed:----------------->")       
+print(cross_tab_year_screen_time)
+
+''' Sorting the Dataset [ hint: sort_values() ] 
+(a) Sort students by Daily Mobile Usage Hours in descending order [ pass False to 
+ascending parameter] 
+(b) Sort by Academic Performance and Sleep Hours together 
+(c) Identify the top 5 students with highest mobile usage '''
+
+print("<--------Sort students by Daily Mobile Usage Hours in descending order [ pass False to ascending parameter------->")
+sorted_by_usage = data_f.sort_values(by="Daily_Usage_Hours", ascending=False)
+print(sorted_by_usage[["Student_ID", "Daily_Usage_Hours"]].head(5))
+print("<----------------Sort by Academic Performance and Sleep Hours together:----------------->")
+sorted_by_performance_sleep = data_f.sort_values(by=["Academic_Performance", "Sleep_Hours"], ascending=[False, False])
+print(sorted_by_performance_sleep[["Student_ID", "Academic_Performance", "Sleep_Hours"]].head(5))
+
+''' Creating New Columns 
+(a) Create a column Total_Entertainment_Hours 
+(b) Create a categorical column Usage_Category (High / Moderate / Low based on 
+usage hours) 
+(c) Explain how new columns help in data analysis '''
+data_f["Total_Entertainment_Hours"] = data_f["Gaming_Hours"] + data_f["Video_Streaming_Hours"]
+data_f["Usage_Category"] = pd.cut(data_f["Daily_Usage_Hours"], bins=[0, 4, 7, 24], labels=["Low", "Moderate", "High"])
+print("<----------------DataFrame with New Columns:----------------->") 
+print(data_f[["Student_ID", "Daily_Usage_Hours", "Total_Entertainment_Hours", "Usage_Category"]].head(10))
+
+
+'''Removing Data [ hint: drop(), inplace parameter ] 
+(a) Drop one column that you think is less useful and justify why 
+(b) Remove students who sleep less than 5 hours 
+(c) Show the shape of dataset before and after removal'''
+print("<---------Data set before removal---------->")
+print(data_f)
+print("<---------Data set after removal----------->")
+data_f.drop('Preferred_App',axis=1,inplace=True)
+data_f.loc[data_f['Sleep_Hours']<5,'Sleep_Hours']=np.nan
+print(data_f)
+
+'''Column Renaming
+(a) Rename at least two columns to more meaningful names
+(b) Display the updated column list
+(c) Why is renaming important in large datasets?'''
+data_f.rename(columns={"Daily_Usage_Hours": "Daily_Mobile_Usage_Hours", "Academic_Performance": "GPA"}, inplace=True)
+print("<----------------Updated Column List:----------------->")
+print(data_f.columns.tolist())
+
+'''Applying Filters 
+Write Pandas code to: 
+(a) Find students who use mobiles more than 8 hours/day 
+(b) Find female students with GPA above 8 
+(c) Find students who use screens before bed and sleep less than 6 hours 
+(d) Explain how filtering helps in decision-making '''
+high_usage_students = data_f[data_f["Daily_Mobile_Usage_Hours"] > 8]
+female_high_gpa_students = data_f[(data_f["Gender"] == "Female") & (data_f["GPA"] > 8)]
+screen_time_before_bed_low_sleep_students = data_f[(data_f["Screen_Time_Before_Bed"] == "Yes") & (data_f["Sleep_Hours"] < 6)]
+print("<----------------Students who use mobiles more than 8 hours/day:----------------->")
+print(high_usage_students[["Student_ID", "Daily_Mobile_Usage_Hours"]])
+print("<----------------Female students with GPA above 8:----------------->")
+print(female_high_gpa_students[["Student_ID", "Gender", "GPA"]])
+print("<----------------Students who use screens before bed and sleep less than 6 hours:----------------->")
+print(screen_time_before_bed_low_sleep_students[["Student_ID", "Screen_Time_Before_Bed", "Sleep_Hours"]])   
+
+''' GroupBy Operations 
+(a) Compute the average GPA for each Course 
+(b) Find the average mobile usage by Gender 
+(c) Calculate mean Sleep Hours for each Year of study'''
+average_gpa_by_course = data_f.groupby("Course")["GPA"].mean()
+average_usage_by_gender = data_f.groupby("Gender")["Daily_Mobile_Usage_Hours"].mean()
+average_sleep_hours_by_year = data_f.groupby("Year")["Sleep_Hours"].mean()  
+print("<----------------Average GPA for each Course:----------------->")
+print(average_gpa_by_course)
+print("<----------------Average mobile usage by Gender:----------------->")
+print(average_usage_by_gender)
+print("<----------------Mean Sleep Hours for each Year of study:----------------->")    
+print(average_sleep_hours_by_year)
+
+''' Multiple Aggregations 
+Perform grouped aggregation to compute mean, max, and min of: 
+Mobile Usage Hours 
+GPA'''
+mobile_usage_stats = data_f.groupby("Course")["Daily_Mobile_Usage_Hours"].agg(["mean", "max", "min"])
+gpa_stats = data_f.groupby("Course")["GPA"].agg(["mean", "max", "min"])
+print("<----------------Mobile Usage Statistics by Course:----------------->")
+print(mobile_usage_stats)
+print("<----------------GPA Statistics by Course:----------------->")
+print(gpa_stats)

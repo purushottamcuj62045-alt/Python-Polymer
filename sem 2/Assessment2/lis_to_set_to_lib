@@ -1,0 +1,15 @@
+''' Write a Python program that: 
+• Takes a list of integers (with possible duplicates) as input. 
+• Converts the list into a set to remove duplicates and prints the resulting set. 
+• Convert the set back into a sorted list and display the sorted list. '''
+
+pist = input("Enter the Integer value of list seprated with ',' :")
+puru = pist.split(',')
+
+puru_set = sorted(set(puru))
+
+print("Conveerted set :",puru_set)
+
+puru_list = list(puru_set)
+
+print("Converted Set to list:",puru_list)

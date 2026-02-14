@@ -1,0 +1,5 @@
+#<-----Problem Statement: Write a program to create two variables a = 10, b = 20 and display their values.----->
+a = 10
+b = 20
+print("Value of a:", a)
+print("Value of b:", b)

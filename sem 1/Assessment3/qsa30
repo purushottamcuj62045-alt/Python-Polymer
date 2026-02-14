@@ -1,0 +1,4 @@
+#Write a program to print your name 20 times.
+for i in range(20):
+    print("Your Name")
+    

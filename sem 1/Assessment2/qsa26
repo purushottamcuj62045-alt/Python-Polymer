@@ -1,0 +1,20 @@
+"""1. Scholarship Eligibility
+A student is considered for scholarships based on percentage and family income:
+ Percentage ≥ 90 → "Full Scholarship"
+ 75 ≤ Percentage < 90 →
+o If income < 2,00,000 → "Half Scholarship"
+o Otherwise → "No Scholarship"
+ Below 75 → "No Scholarship"
+"""
+percentage = float(input("Enter your percentage: "))
+income = float(input("Enter your family income: "))
+if percentage >= 90:
+    print("Full Scholarship")
+elif 75 <= percentage < 90:
+    if income < 200000:
+        print("Half Scholarship")
+    else:
+        print("No Scholarship")
+else:
+    print("No Scholarship")
+    

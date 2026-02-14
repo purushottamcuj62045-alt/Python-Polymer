@@ -1,0 +1,28 @@
+'''Problem Statement: Write a Python program that takes a list of numbers as input and performs
+the following operations:
+1. Remove duplicates from the list.
+2. Sort the list in ascending order.
+3. Reverse the sorted list.
+4. Find the second largest number in the list.
+5. Find the sum of all elements in the list.
+Input Format: A list of integers separated by space.'''
+numbers = input("Enter a list of numbers separated by space: ").split()
+numbers = [int(num) for num in numbers]
+# Remove duplicates
+unique_numbers = list(set(numbers))
+# Sort the list in ascending order
+unique_numbers.sort()
+# Reverse the sorted list
+unique_numbers.reverse()
+# Find the second largest number
+if len(unique_numbers) < 2:
+    second_largest = None
+else:
+    second_largest = unique_numbers[1]
+# Find the sum of all elements in the list
+total_sum = sum(unique_numbers)
+print("Unique numbers:", unique_numbers)
+print("Reversed sorted list:", unique_numbers)
+print("Second largest number:", second_largest)
+print("Sum of all elements:", total_sum)
+#<-- IGNORE --->

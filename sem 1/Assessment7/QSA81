@@ -1,0 +1,78 @@
+'''
+Q1. A Product Price Management System (PPMS) is a software tool or platform 
+used by businesses to efficiently manage the pricing of products across 
+different sales channels, regions, and over time. This system helps businesses 
+to optimize their pricing strategies, track price changes, and ensure
+ consistency in pricing across various platforms. You need to create a system 
+ to manage product (Horticulture related) prices in a store. Each product will 
+ have a name as the key and the price as the value in a dictionary. 
+ The product management system have functionalities given below:
+
+Requirements:
+
+•	Store Products: Create a dictionary to store product (Horticulture related) names as keys and their prices as values. Store approximately 20 records.
+o	Example: {'Apple': 1.5, 'Banana': 0.9, 'walnut': 1.2}
+•	Add a New Product: Implement a function to add a new product and its price to the dictionary.
+•	Update Product Price: Implement a function to update the price of an existing product.
+•	Delete a Product: Implement a function that removes a product from the dictionary.
+•	Calculate Total Price: Write a function that calculates the total price of all products in the dictionary.
+•	Discount on All Products: Write a function to apply a percentage discount to all products and print the updated prices.
+'''
+products = {
+    'Apple': 1.5,
+    'Banana': 0.9,  
+    'Walnut': 1.2,
+    'Orange': 1.0,
+    'Grapes': 2.0,
+    'Mango': 1.8,
+    'Pineapple': 2.5,
+    'Strawberry': 3.0,
+    'Blueberry': 2.8,
+    'Peach': 1.6,
+    'Kiwi': 1.4,
+    'Plum': 1.3,
+    'Cherry': 2.2,
+    'Coconut': 1.7,
+    'Papaya': 1.9,
+    'Lemon': 0.8,
+    'Lime': 0.7,
+    'Raspberry': 2.4,
+    'Blackberry': 2.6,
+    'Avocado': 1.1}
+def add_product(name, price):
+    """Add a new product to the dictionary."""
+    products[name] = price
+    print(f"Product '{name}' added with price {price}.")
+def update_product_price(name, new_price):
+    """Update the price of an existing product."""
+    if name in products:
+        products[name] = new_price
+        print(f"Product '{name}' updated to new price {new_price}.")
+    else:
+        print(f"Product '{name}' not found.")
+def delete_product(name):
+    """Delete a product from the dictionary."""
+    if name in products:
+        del products[name]
+        print(f"Product '{name}' deleted.")
+    else:
+        print(f"Product '{name}' not found.")
+def calculate_total_price():
+    """Calculate the total price of all products."""
+    total_price = sum(products.values())
+    print(f"Total price of all products: {total_price}")
+def apply_discount(discount_percentage):
+    """Apply a percentage discount to all products."""
+    for name in products:
+        original_price = products[name]
+        discounted_price = original_price * (1 - discount_percentage / 100)
+        products[name] = round(discounted_price, 2)
+    print(f"Discount of {discount_percentage}% applied to all products.")
+    print("Updated product prices:", products)
+# Example usage
+add_product('Cucumber', 0.5)
+update_product_price('Apple', 1.6)
+delete_product('Banana')
+calculate_total_price()
+apply_discount(10)  # Apply a 10% discount to all products
+#<-- IGNORE --->

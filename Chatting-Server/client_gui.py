@@ -1,11 +1,4 @@
-"""
-PyChat Client — End-to-End Encrypted Private Messages
-======================================================
-DMs are encrypted with RSA-OAEP before leaving this device.
-The server only forwards opaque ciphertext and cannot read DMs.
 
-Requires: pip install cryptography
-"""
 
 import socket
 import threading
@@ -21,7 +14,7 @@ from cryptography.hazmat.backends import default_backend
 
 HOST = "127.0.0.1"
 PORT = 55555
-EVERYONE = "Everyone 📢"
+EVERYONE = "Everyone "
 
 
 def generate_keypair():
@@ -129,7 +122,7 @@ class ClientApp:
         hdr = tk.Frame(self.root, bg=self.PANEL, pady=14)
         hdr.pack(fill="x")
         tk.Label(hdr, text="◈  PyChat", font=tf, bg=self.PANEL, fg=self.ACCENT2).pack(side="left", padx=20)
-        tk.Label(hdr, text="🔒 E2E Encrypted DMs", font=sf, bg=self.PANEL, fg=self.YELLOW).pack(side="left", padx=4)
+        tk.Label(hdr, text=" E2E Encrypted DMs", font=sf, bg=self.PANEL, fg=self.YELLOW).pack(side="left", padx=4)
         self.status_lbl = tk.Label(hdr, text="● DISCONNECTED", font=lf, bg=self.PANEL, fg=self.RED)
         self.status_lbl.pack(side="right", padx=20)
         self.nick_badge = tk.Label(hdr, text="", font=lf, bg=self.PANEL, fg=self.GREEN)
@@ -148,7 +141,7 @@ class ClientApp:
         tk.Entry(bar, textvariable=self.port_var, width=7, bg=self.PANEL, fg=self.TEXT,
                  insertbackground=self.TEXT, relief="flat", font=mf, bd=0
                  ).pack(side="left", padx=(4, 20), ipady=4)
-        self.conn_btn = tk.Button(bar, text="⚡  CONNECT", font=lf,
+        self.conn_btn = tk.Button(bar, text="  CONNECT", font=lf,
             bg=self.ACCENT, fg="#fff", relief="flat", cursor="hand2",
             padx=16, pady=6, command=self.toggle_connect)
         self.conn_btn.pack(side="left")
@@ -194,7 +187,7 @@ class ClientApp:
         self.msg_entry.insert(0, "Connect to start chatting...")
         self.msg_entry.pack(side="left", fill="x", expand=True, ipady=8, padx=(0, 10))
         self.msg_entry.bind("<Return>", self.send_message)
-        self.send_btn = tk.Button(in_frame, text="SEND ▶", font=lf,
+        self.send_btn = tk.Button(in_frame, text="SEND ", font=lf,
             bg=self.ACCENT2, fg="#fff", relief="flat", cursor="hand2",
             padx=14, pady=7, state="disabled", command=self.send_message)
         self.send_btn.pack(side="right")
@@ -213,7 +206,7 @@ class ClientApp:
         for nick in online_nicks:
             if nick == self.nickname:
                 continue
-            has_key = "🔒" if nick in self.peer_pubkeys else "  "
+            has_key = "" if nick in self.peer_pubkeys else "  "
             label = f" {has_key} {nick}"
             if self.unread.get(nick, 0):
                 label += "  ●"
@@ -225,7 +218,7 @@ class ClientApp:
         for i in range(self.conv_lb.size()):
             raw = self.conv_lb.get(i)
             # Extract nick: strip lock icon and badges
-            name = raw.strip().replace("🔒", "").replace("●", "").strip()
+            name = raw.strip().replace("", "").replace("●", "").strip()
             # Remove unread count like "(3)"
             if "  (" in name:
                 name = name[:name.index("  (")].strip()
@@ -238,7 +231,7 @@ class ClientApp:
     def _on_conv_select(self, _):
         sel = self.conv_lb.curselection()
         if not sel: return
-        raw = self.conv_lb.get(sel[0]).strip().replace("🔒", "").replace("●", "").strip()
+        raw = self.conv_lb.get(sel[0]).strip().replace("", "").replace("●", "").strip()
         if "  (" in raw:
             raw = raw[:raw.index("  (")].strip()
         name = raw.strip()
@@ -249,14 +242,14 @@ class ClientApp:
         self._load_history(name)
 
         if name == EVERYONE:
-            self.chat_title.config(text="  📢 Everyone — Broadcast")
+            self.chat_title.config(text="   Everyone — Broadcast")
             self.enc_badge.config(text="")
         else:
-            self.chat_title.config(text=f"  🔒 Private chat with {name}")
+            self.chat_title.config(text=f"   Private chat with {name}")
             if name in self.peer_pubkeys:
                 self.enc_badge.config(text="✓ End-to-end encrypted — server cannot read this conversation")
             else:
-                self.enc_badge.config(text="⏳ Fetching encryption key…")
+                self.enc_badge.config(text=" Fetching encryption key…")
                 if self.connected:
                     self._request_key(name)
 
@@ -305,7 +298,7 @@ class ClientApp:
             self.peer_pubkeys[nick] = b64_to_pubkey(b64key)
         except Exception:
             return
-        self._append(EVERYONE, f"🔑 Key received for {nick} — DMs are now encrypted", "info")
+        self._append(EVERYONE, f" Key received for {nick} — DMs are now encrypted", "info")
         # Update enc badge if this is the active chat
         if self.active_chat == nick:
             self.enc_badge.config(text="✓ End-to-end encrypted — server cannot read this conversation")
@@ -372,7 +365,7 @@ class ClientApp:
     def _ui_disconnected(self):
         self.status_lbl.config(text="● DISCONNECTED", fg=self.RED)
         self.nick_badge.config(text="")
-        self.conn_btn.config(text="⚡  CONNECT", bg=self.ACCENT)
+        self.conn_btn.config(text="  CONNECT", bg=self.ACCENT)
         self.msg_entry.config(state="disabled")
         self.msg_entry.delete(0, "end")
         self.msg_entry.insert(0, "Connect to start chatting...")
@@ -457,7 +450,7 @@ class ClientApp:
         """Encrypt and send a DM. If we don't have their key yet, queue it."""
         if to not in self.peer_pubkeys:
             self.pending_msgs[to].append(msg)
-            self._append(to, f"⏳ Fetching {to}'s key, message queued…", "info")
+            self._append(to, f" Fetching {to}'s key, message queued…", "info")
             self._request_key(to)
             return
         try:

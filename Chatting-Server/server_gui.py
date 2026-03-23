@@ -71,7 +71,7 @@ class ServerApp:
         tk.Label(hdr, text="⬡  PyChat Server", font=tf,
                  bg=self.PANEL, fg=self.ACCENT).pack(side="left", padx=20)
         # E2E badge
-        tk.Label(hdr, text="🔒 E2E ENCRYPTED DMs", font=sf,
+        tk.Label(hdr, text=" E2E ENCRYPTED DMs", font=sf,
                  bg=self.PANEL, fg=self.YELLOW).pack(side="left", padx=10)
         self.status_lbl = tk.Label(hdr, text="● OFFLINE", font=lf,
                                    bg=self.PANEL, fg=self.RED)
@@ -91,7 +91,7 @@ class ServerApp:
                  insertbackground=self.TEXT, relief="flat", font=mf, bd=0
                  ).pack(side="left", padx=(4, 20), ipady=4)
 
-        self.toggle_btn = tk.Button(bar, text="▶  START SERVER", font=lf,
+        self.toggle_btn = tk.Button(bar, text=" START SERVER", font=lf,
             bg=self.ACCENT, fg="#fff", relief="flat", cursor="hand2",
             padx=16, pady=6, command=self.toggle_server)
         self.toggle_btn.pack(side="left")
@@ -168,7 +168,7 @@ class ServerApp:
         self.client_lb.delete(0, "end")
         with lock:
             for nick in clients:
-                has_key = "🔑" if nick in pubkeys else "  "
+                has_key = "" if nick in pubkeys else "  "
                 self.client_lb.insert("end", f" {has_key} {nick}")
         self._push_user_list()
 
@@ -198,8 +198,8 @@ class ServerApp:
         except OSError as e:
             self.log_msg(f"Error: {e}", "leave"); return
         self.running = True
-        self.status_lbl.config(text="● ONLINE", fg=self.GREEN)
-        self.toggle_btn.config(text="■  STOP SERVER", bg=self.RED)
+        self.status_lbl.config(text="ONLINE", fg=self.GREEN)
+        self.toggle_btn.config(text="  STOP SERVER", bg=self.RED)
         self.log_msg(f"Server started on {host}:{port}", "sys")
         threading.Thread(target=self._accept_loop, daemon=True).start()
 
@@ -215,8 +215,8 @@ class ServerApp:
             clients.clear()
             pubkeys.clear()
         self.root.after(0, self.refresh_clients)
-        self.status_lbl.config(text="● OFFLINE", fg=self.RED)
-        self.toggle_btn.config(text="▶  START SERVER", bg=self.ACCENT)
+        self.status_lbl.config(text=" OFFLINE", fg=self.RED)
+        self.toggle_btn.config(text="  START SERVER", bg=self.ACCENT)
         self.log_msg("Server stopped.", "sys")
 
     def _accept_loop(self):
@@ -245,7 +245,7 @@ class ServerApp:
 
         self.root.after(0, self.refresh_clients)
         self.root.after(0, lambda: self.log_msg(f"{nick} joined from {addr[0]}", "join"))
-        sock.send(f"SYS:Welcome {nick}! DMs are end-to-end encrypted 🔒".encode())
+        sock.send(f"SYS:Welcome {nick}! DMs are end-to-end encrypted ".encode())
         self._sys_all(f"{nick} joined.", exclude=nick)
 
         # Main message loop
@@ -261,7 +261,7 @@ class ServerApp:
                     with lock:
                         pubkeys[nick] = b64key
                     self.root.after(0, lambda n=nick: self.log_msg(
-                        f"🔑 {n} registered public key", "key"))
+                        f" {n} registered public key", "key"))
                     self.root.after(0, self.refresh_clients)
 
                 # ── Key request ──────────────────────────────────────────
@@ -319,7 +319,7 @@ class ServerApp:
                 pass
             # Server log shows ENCRYPTED placeholder — cannot read content
             self.root.after(0, lambda: self.log_msg(
-                f"🔒 [DM] {frm} → {to}: [ENCRYPTED — server cannot read]", "dm"))
+                f" [DM] {frm} → {to}: [ENCRYPTED — server cannot read]", "dm"))
         else:
             if sender_sock:
                 try:

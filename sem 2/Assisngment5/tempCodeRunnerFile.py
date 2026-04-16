@@ -1,0 +1,6 @@
+print("<-----------IQR Method-------------->")
+print(f"Q1           : {q1}")
+print(f"Q3           : {q3}")
+print(f"IQR          : {iqr}")
+print(f"Lower Bound  : {lower_bound}")
+print(f"Upper Bound  : {upper_bound}")

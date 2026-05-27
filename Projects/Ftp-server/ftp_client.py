@@ -167,7 +167,7 @@ def delf(file_name):
     print("Deleting File: {}....".format(file_name))
 
     try:
-        s.send(b"DELF")
+        s.sendall(b"DELF")
         s.recv(BUFFER_SIZE)
 
     except Exception as e:
@@ -176,8 +176,8 @@ def delf(file_name):
         return
 
     try:
-        s.send(struct.pack("h", len(file_name)))
-        s.send(file_name.encode())
+        s.sendall(struct.pack("h", len(file_name)))
+        s.sendall(file_name.encode())
 
         file_exists = struct.unpack("i", s.recv(4))[0]
 
@@ -204,7 +204,7 @@ def delf(file_name):
 
     try:
         if confirm_delete in ["Y", "YES"]:
-            s.send(b"Y")
+            s.sendall(b"Y")
 
             delete_status = struct.unpack("i", s.recv(4))[0]
 
@@ -214,7 +214,7 @@ def delf(file_name):
                 print("File failed to delete")
 
         else:
-            s.send(b"N")
+            s.sendall(b"N")
             print("Delete abandoned by user!")
 
     except Exception as e:

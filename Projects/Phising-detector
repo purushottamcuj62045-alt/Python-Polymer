@@ -1,0 +1,249 @@
+#!/usr/bin/env python3
+"""
+Phishing Link Detector
+-----------------------
+A CLI tool that analyzes a URL and flags signs that it may be a
+phishing / malicious link. It does NOT visit the URL or make any
+network requests -- everything is done by inspecting the string
+itself, which keeps it 100% safe to run and test with.
+
+Checks performed:
+  1. IP address used instead of a domain name
+  2. Suspicious / phishing-related keywords in the URL
+  3. Use of a known URL-shortener service
+  4. "@" symbol trick (browser ignores everything before @)
+  5. Excessive subdomains (e.g. paypal.login.verify.example.com)
+  6. Brand name combined with extra words (typosquat-style pattern)
+  7. Suspicious top-level domain (TLD)
+  8. Lack of HTTPS
+  9. Unusually long URL
+  10. Hyphens in the domain (common in fake domains)
+
+Each check contributes points to a risk score. The final score
+decides the verdict: SAFE / SUSPICIOUS / DANGEROUS.
+
+Usage:
+    python phishing_detector.py
+    python phishing_detector.py "http://paypal-secure-login.tk/account"
+    python phishing_detector.py --file urls.txt
+"""
+
+import re
+import sys
+import argparse
+from urllib.parse import urlparse
+
+
+# ---------------------------------------------------------------------
+# Reference data used by the checks
+# ---------------------------------------------------------------------
+
+SUSPICIOUS_KEYWORDS = [
+    "login", "verify", "update", "secure", "account", "banking",
+    "confirm", "signin", "webscr", "password", "suspend", "unlock",
+    "billing", "invoice", "urgent", "limited", "reward", "gift",
+    "bonus", "free", "click", "alert", "recover", "security-check",
+]
+
+KNOWN_BRANDS = [
+    "paypal", "google", "microsoft", "apple", "amazon", "facebook",
+    "instagram", "netflix", "bank", "irs", "whatsapp", "outlook",
+    "chase", "wellsfargo", "linkedin", "dropbox", "icloud",
+]
+
+URL_SHORTENERS = [
+    "bit.ly", "tinyurl.com", "goo.gl", "t.co", "ow.ly", "is.gd",
+    "buff.ly", "adf.ly", "cutt.ly", "shorte.st", "rb.gy", "rebrand.ly",
+]
+
+SUSPICIOUS_TLDS = [
+    ".tk", ".ml", ".ga", ".cf", ".gq", ".xyz", ".top", ".club",
+    ".work", ".click", ".link", ".loan", ".men", ".zip", ".review",
+]
+
+IP_REGEX = re.compile(
+    r"^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$"
+)
+
+
+# ---------------------------------------------------------------------
+# Core analysis
+# ---------------------------------------------------------------------
+
+def analyze_url(raw_url: str) -> dict:
+    """Run all checks on a single URL and return a result dict."""
+
+    url = raw_url.strip()
+    if not re.match(r"^https?://", url, re.IGNORECASE):
+        # Assume http(s) was omitted, parse anyway but note it
+        url_for_parsing = "http://" + url
+    else:
+        url_for_parsing = url
+
+    parsed = urlparse(url_for_parsing)
+    hostname = (parsed.hostname or "").lower()
+    scheme = parsed.scheme.lower()
+    full_lower = url.lower()
+
+    reasons = []
+    score = 0
+
+    # 1. IP address instead of domain name
+    host_no_port = hostname.split(":")[0] if hostname else ""
+    if IP_REGEX.match(host_no_port):
+        score += 30
+        reasons.append("Uses a raw IP address instead of a domain name.")
+
+    # 2. Suspicious keywords
+    found_keywords = [kw for kw in SUSPICIOUS_KEYWORDS if kw in full_lower]
+    if found_keywords:
+        score += min(20, 5 * len(found_keywords))
+        reasons.append(
+            f"Contains suspicious keyword(s): {', '.join(sorted(set(found_keywords)))}."
+        )
+
+    # 3. URL shortener
+    if any(shortener in hostname for shortener in URL_SHORTENERS):
+        score += 15
+        reasons.append("Uses a known URL-shortening service (real destination is hidden).")
+
+    # 4. '@' symbol trick
+    if "@" in url:
+        score += 25
+        reasons.append(
+            "Contains an '@' symbol -- browsers ignore everything before it, "
+            "so the real domain may be hidden after the '@'."
+        )
+
+    # 5. Excessive subdomains
+    if hostname and not IP_REGEX.match(host_no_port):
+        subdomain_count = hostname.count(".")
+        if subdomain_count >= 3:
+            score += 15
+            reasons.append(f"Unusually deep subdomain structure ('{hostname}').")
+
+    # 6. Brand name used as a subdomain/keyword but not the real domain
+    for brand in KNOWN_BRANDS:
+        if brand in hostname:
+            # crude check: is the brand actually the main registered domain?
+            parts = hostname.split(".")
+            # main domain is typically the second-to-last part, e.g. example.com
+            main_domain = parts[-2] if len(parts) >= 2 else hostname
+            if brand != main_domain:
+                score += 25
+                reasons.append(
+                    f"Brand name '{brand}' appears in the URL but is NOT the "
+                    f"actual domain (real domain looks like '{main_domain}')."
+                )
+            break
+
+    # 7. Suspicious TLD
+    if any(hostname.endswith(tld) for tld in SUSPICIOUS_TLDS):
+        score += 15
+        reasons.append("Uses a top-level domain often abused for phishing (e.g. .tk, .xyz, .top).")
+
+    # 8. No HTTPS
+    if scheme != "https":
+        score += 10
+        reasons.append("Does not use HTTPS (no encryption/certificate validation).")
+
+    # 9. Very long URL
+    if len(url) > 75:
+        score += 10
+        reasons.append(f"Unusually long URL ({len(url)} characters) -- often used to hide details.")
+
+    # 10. Hyphens in domain
+    if host_no_port.count("-") >= 2:
+        score += 10
+        reasons.append("Domain contains multiple hyphens, a common fake-domain pattern.")
+
+    score = min(score, 100)
+
+    if score >= 60:
+        verdict = "DANGEROUS"
+    elif score >= 30:
+        verdict = "SUSPICIOUS"
+    else:
+        verdict = "SAFE"
+
+    if not reasons:
+        reasons.append("No suspicious patterns detected by this tool's checks.")
+
+    return {
+        "url": raw_url,
+        "hostname": hostname,
+        "score": score,
+        "verdict": verdict,
+        "reasons": reasons,
+    }
+
+
+# ---------------------------------------------------------------------
+# Presentation helpers
+# ---------------------------------------------------------------------
+
+VERDICT_COLOR = {
+    "SAFE": "\033[92m",       # green
+    "SUSPICIOUS": "\033[93m", # yellow
+    "DANGEROUS": "\033[91m",  # red
+}
+RESET = "\033[0m"
+
+
+def print_result(result: dict) -> None:
+    color = VERDICT_COLOR.get(result["verdict"], "")
+    print("-" * 60)
+    print(f"URL      : {result['url']}")
+    print(f"Domain   : {result['hostname']}")
+    print(f"Risk score: {result['score']}/100")
+    print(f"Verdict  : {color}{result['verdict']}{RESET}")
+    print("Reasons:")
+    for r in result["reasons"]:
+        print(f"  - {r}")
+    print("-" * 60)
+
+
+# ---------------------------------------------------------------------
+# CLI entry point
+# ---------------------------------------------------------------------
+
+def main():
+    parser = argparse.ArgumentParser(description="Phishing Link Detector")
+    parser.add_argument("url", nargs="?", help="A single URL to check")
+    parser.add_argument("--file", help="Path to a text file with one URL per line")
+    args = parser.parse_args()
+
+    if args.file:
+        try:
+            with open(args.file, "r", encoding="utf-8") as f:
+                urls = [line.strip() for line in f if line.strip()]
+        except OSError as e:
+            print(f"Could not read file: {e}")
+            sys.exit(1)
+
+        for u in urls:
+            print_result(analyze_url(u))
+        return
+
+    if args.url:
+        print_result(analyze_url(args.url))
+        return
+
+    # Interactive mode
+    print("Phishing Link Detector (interactive mode)")
+    print("Type a URL to check it, or 'quit' to exit.\n")
+    while True:
+        try:
+            user_input = input("Enter URL> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nExiting.")
+            break
+        if user_input.lower() in ("quit", "exit", "q"):
+            break
+        if not user_input:
+            continue
+        print_result(analyze_url(user_input))
+
+
+if __name__ == "__main__":
+    main()
